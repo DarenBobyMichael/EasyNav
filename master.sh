@@ -59,6 +59,17 @@ alias_deletion() {
     source ~/.bashrc
 }
 
+check_quotes() {
+    local input="$1"
+    local single_quotes=$(echo "$input" | grep -o "'" | wc -l)
+    local double_quotes=$(echo "$input" | grep -o '"' | wc -l)
+
+    if [ $((single_quotes % 2)) -ne 0 ] || [ $((double_quotes % 2)) -ne 0 ]; then
+        return 1
+    fi
+    return 0
+}
+
 home_render() {
 
     read -p "$(echo -e "${RED}>>${NC}") " option
@@ -83,6 +94,11 @@ home_render() {
             echo "cd: no such file or directory"
         fi
     else
+        if ! check_quotes "$option"; then
+            echo -e "${RED}Error:${NC} Unmatched quotes in command"
+            return
+        fi
+
         prev_dir=$(pwd)
         temp_err=$(mktemp)
         eval "$option" 2>"$temp_err"
