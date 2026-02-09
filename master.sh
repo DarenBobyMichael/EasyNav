@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source ~/.bashrc 2>/dev/null
+source ~/.bashrc 2>/dev/null 
 
 #COLORS
 NC='\033[0m'
