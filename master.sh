@@ -26,7 +26,7 @@ BG_WHITE='\033[47m'
 render_current_dir() {
     current_dir=$(pwd)
     echo -e "\n${RED}╭──────────────────────────────╮${NC}"
-    echo -e "${RED}│${NC}${BG_WHITE}${BLACK}  ✪  ${current_dir}  ${NC}"
+    echo -e "${RED}│${NC}  ✪  ${current_dir}  ${NC}"
     echo -e "${RED}╰──────────────────────────────╯${NC}\n"
 }
 # ALIAS MODULES
