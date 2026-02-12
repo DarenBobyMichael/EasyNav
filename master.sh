@@ -53,15 +53,31 @@ execute_command() {
     fi
 
     local prev_dir=$(pwd)
+    local temp_out=$(mktemp)
     local temp_err=$(mktemp)
-    eval "$cmd" 2>"$temp_err"
+
+    # Capture both stdout and stderr
+    eval "$cmd" > "$temp_out" 2>"$temp_err"
     local status=$?
 
-    if [ "$status" -ne 0 ]; then
-        local clean_error=$(sed 's/^[^:]*: line [0-9]*: //' "$temp_err")
-        printf '%s\n' "$clean_error"
+    # Display stdout if any
+    if [ -s "$temp_out" ]; then
+        cat "$temp_out"
     fi
-    rm -f "$temp_err"
+
+    # Display stderr (both errors and informational messages)
+    if [ -s "$temp_err" ]; then
+        if [ "$status" -ne 0 ]; then
+            # Clean error messages for failed commands
+            local clean_error=$(sed 's/^[^:]*: line [0-9]*: //' "$temp_err")
+            printf '%s\n' "$clean_error"
+        else
+            # Show stderr as-is for successful commands (e.g., git output)
+            cat "$temp_err"
+        fi
+    fi
+
+    rm -f "$temp_out" "$temp_err"
 
     if [ "$(pwd)" != "$prev_dir" ]; then
         render_current_dir
