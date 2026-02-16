@@ -33,10 +33,13 @@ BG_CYAN='\033[46m'
 BG_WHITE='\033[47m'
 
 render_current_dir() {
+    local current_dir
     current_dir=$(pwd)
-    echo -e "\n${RED}╭──────────────────────────────╮${NC}"
-    echo -e "${RED}│${NC}  ✪  ${current_dir}  ${NC}"
-    echo -e "${RED}╰──────────────────────────────╯${NC}\n"
+    local color="${EN_DIR_COLOR:-$RED}"
+    local symbol="${EN_DIR_SYMBOL:-✪}"
+    echo -e "\n${color}╭──────────────────────────────╮${NC}"
+    echo -e "${color}│${NC}  ${symbol}  ${current_dir}  ${NC}"
+    echo -e "${color}╰──────────────────────────────╯${NC}\n"
 }
 
 check_quotes() {
@@ -107,7 +110,7 @@ dispatch_command() {
 }
 
 home_render() {
-    read -e -r -p "$(echo -e "${RED}>>${NC}") " option
+    read -e -r -p "$(echo -e "${EN_PROMPT_COLOR:-$RED}${EN_PROMPT_SYMBOL:->>}${NC}") " option
 
     # Add command to history (skip empty commands)
     [[ -n "$option" ]] && history -s "$option"
