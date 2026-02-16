@@ -5,6 +5,12 @@ source ~/.enrc 2>/dev/null
 
 source ./modules/module_master.sh
 
+# Enable command history
+HISTFILE=~/.en_history
+HISTSIZE=1000
+HISTFILESIZE=2000
+set -o history
+
 
 #COLORS
 NC='\033[0m'
@@ -53,15 +59,31 @@ execute_command() {
     fi
 
     local prev_dir=$(pwd)
+    local temp_out=$(mktemp)
     local temp_err=$(mktemp)
-    eval "$cmd" 2>"$temp_err"
+
+    # Capture both stdout and stderr
+    eval "$cmd" > "$temp_out" 2>"$temp_err"
     local status=$?
 
-    if [ "$status" -ne 0 ]; then
-        local clean_error=$(sed 's/^[^:]*: line [0-9]*: //' "$temp_err")
-        printf '%s\n' "$clean_error"
+    # Display stdout if any
+    if [ -s "$temp_out" ]; then
+        cat "$temp_out"
     fi
-    rm -f "$temp_err"
+
+    # Display stderr (both errors and informational messages)
+    if [ -s "$temp_err" ]; then
+        if [ "$status" -ne 0 ]; then
+            # Clean error messages for failed commands
+            local clean_error=$(sed 's/^[^:]*: line [0-9]*: //' "$temp_err")
+            printf '%s\n' "$clean_error"
+        else
+            # Show stderr as-is for successful commands (e.g., git output)
+            cat "$temp_err"
+        fi
+    fi
+
+    rm -f "$temp_out" "$temp_err"
 
     if [ "$(pwd)" != "$prev_dir" ]; then
         render_current_dir
@@ -85,7 +107,10 @@ dispatch_command() {
 }
 
 home_render() {
-    read -p "$(echo -e "${RED}>>${NC}") " option
+    read -e -r -p "$(echo -e "${RED}>>${NC}") " option
+
+    # Add command to history (skip empty commands)
+    [[ -n "$option" ]] && history -s "$option"
 
     # Built-in commands that must stay in core
     case "$option" in
@@ -95,11 +120,10 @@ home_render() {
             return
             ;;
         cd|cd\ *)
-            eval "$option" 2>/dev/null
-            if [ $? -eq 0 ]; then
-                render_current_dir
-            else
+            if ! eval "$option" 2>/dev/null; then
                 echo "cd: no such file or directory"
+            else
+                render_current_dir
             fi
             return
             ;;
