@@ -5,6 +5,12 @@ source ~/.enrc 2>/dev/null
 
 source ./modules/module_master.sh
 
+# Enable command history
+HISTFILE=~/.en_history
+HISTSIZE=1000
+HISTFILESIZE=2000
+set -o history
+
 
 #COLORS
 NC='\033[0m'
@@ -101,7 +107,10 @@ dispatch_command() {
 }
 
 home_render() {
-    read -e -pread "$(echo -e "${RED}>>${NC}") " option
+    read -e -r -p "$(echo -e "${RED}>>${NC}") " option
+
+    # Add command to history (skip empty commands)
+    [[ -n "$option" ]] && history -s "$option"
 
     # Built-in commands that must stay in core
     case "$option" in
@@ -111,11 +120,10 @@ home_render() {
             return
             ;;
         cd|cd\ *)
-            eval "$option" 2>/dev/null
-            if [ $? -eq 0 ]; then
-                render_current_dir
-            else
+            if ! eval "$option" 2>/dev/null; then
                 echo "cd: no such file or directory"
+            else
+                render_current_dir
             fi
             return
             ;;
