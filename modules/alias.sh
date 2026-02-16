@@ -1,3 +1,4 @@
+#!/bin/bash
 # ALIAS MODULE
 # Command handler for 'alias' commands
 en_alias() {

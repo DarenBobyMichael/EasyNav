@@ -101,7 +101,7 @@ dispatch_command() {
 }
 
 home_render() {
-    read -p "$(echo -e "${RED}>>${NC}") " option
+    read -e -pread "$(echo -e "${RED}>>${NC}") " option
 
     # Built-in commands that must stay in core
     case "$option" in
